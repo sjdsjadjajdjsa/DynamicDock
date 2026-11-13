@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var dockController: DockPanelController?
     private let media = MediaController()
     private var settingsWindow: NSWindow?
+    private var nowPlaying: NowPlayingWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         if SnapshotTool.runIfRequested() {
@@ -41,7 +42,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         media.start()
 
+        let nowPlaying = NowPlayingWindowController(media: media)
+        self.nowPlaying = nowPlaying
+
         let controller = DockPanelController(media: media)
+        controller.onOpenNowPlaying = { screen in nowPlaying.open(on: screen) }
         controller.start()
         dockController = controller
     }

@@ -8,6 +8,8 @@ struct MusicDockView: View {
     let media: MediaController
     /// Fixed layout for design snapshots; the live dock follows the settings.
     var layoutOverride: DockLayout?
+    /// Called when the artwork is clicked.
+    var onArtworkTap: () -> Void = {}
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -35,7 +37,7 @@ struct MusicDockView: View {
 
     private func horizontalContent(shown: Bool) -> some View {
         HStack(spacing: 12) {
-            ArtworkView(image: media.artwork)
+            artworkButton { ArtworkView(image: media.artwork) }
 
             VStack(alignment: .leading, spacing: 2) {
                 textLines(shown: shown, alignment: .leading)
@@ -53,11 +55,13 @@ struct MusicDockView: View {
 
     private func verticalContent(shown: Bool) -> some View {
         VStack(spacing: 0) {
-            ArtworkView(
-                image: media.artwork,
-                size: DesignTokens.verticalArtworkSize,
-                cornerRadius: DesignTokens.cornerRadius - DesignTokens.verticalArtworkInset
-            )
+            artworkButton {
+                ArtworkView(
+                    image: media.artwork,
+                    size: DesignTokens.verticalArtworkSize,
+                    cornerRadius: DesignTokens.cornerRadius - DesignTokens.verticalArtworkInset
+                )
+            }
 
             VStack(spacing: 2) {
                 textLines(shown: shown, alignment: .center)
@@ -75,6 +79,13 @@ struct MusicDockView: View {
         }
         .padding(.top, DesignTokens.verticalArtworkInset)
         .padding(.bottom, 10)
+    }
+
+    /// The artwork opens the full-screen view.
+    private func artworkButton(@ViewBuilder _ artwork: () -> some View) -> some View {
+        Button(action: onArtworkTap, label: artwork)
+            .buttonStyle(PressScaleStyle())
+            .help("Open full screen")
     }
 
     @ViewBuilder

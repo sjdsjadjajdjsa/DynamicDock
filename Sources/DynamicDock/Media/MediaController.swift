@@ -46,6 +46,13 @@ final class MediaController {
     var artwork: NSImage? { activeStatus?.artwork }
     var isPlaying: Bool { activeStatus?.state == .playing }
 
+    /// The artwork at full-screen quality, or the thumbnail when the original
+    /// is no longer cached.
+    var largeArtwork: NSImage? {
+        guard let track, let artwork else { return nil }
+        return artworkLoader.largeArtwork(forTrackID: track.id) ?? artwork
+    }
+
     /// The player commands go to: the displayed one, or any running player
     /// when nothing is loaded yet.
     var commandTarget: MediaPlayer? {

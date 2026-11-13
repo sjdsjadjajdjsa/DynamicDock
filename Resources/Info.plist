@@ -17,9 +17,9 @@
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.3.0</string>
+    <string>0.4.0</string>
     <key>CFBundleVersion</key>
-    <string>3</string>
+    <string>4</string>
     <key>LSMinimumSystemVersion</key>
     <string>14.0</string>
     <key>LSUIElement</key>
@@ -28,6 +28,8 @@
     <true/>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
+    <key>NSAudioCaptureUsageDescription</key>
+    <string>Dynamic Dock listens to the audio your Mac is playing to animate the full-screen visualizer. Nothing is recorded or saved.</string>
     <key>NSAppleEventsUsageDescription</key>
     <string>Dynamic Dock reads the current track from Spotify and Music and sends play, pause and skip commands.</string>
 </dict>

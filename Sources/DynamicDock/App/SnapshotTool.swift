@@ -48,6 +48,19 @@ enum SnapshotTool {
 
     private static func render(media: MediaController, to path: String, scale: Double) {
         DesignPreview.isSnapshot = true
+        // `--full` renders the full-screen now-playing view instead of the dock.
+        if CommandLine.arguments.contains("--full") {
+            let view = NowPlayingView(media: media, spectrum: AudioSpectrum(), onClose: {})
+                .frame(width: 1440, height: 810)
+            let renderer = ImageRenderer(content: view)
+            renderer.scale = scale
+            if let image = renderer.cgImage,
+               let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) {
+                try? data.write(to: URL(fileURLWithPath: path))
+            }
+            return
+        }
+
         let visibility = DockVisibility()
         visibility.isShown = true
         let backdrop = LinearGradient(

@@ -30,12 +30,17 @@ final class DockPanelController: NSObject {
     private var hideTask: Task<Void, Never>?
     private var orderOutTask: Task<Void, Never>?
 
+    /// Called with the dock's screen when the artwork is clicked.
+    var onOpenNowPlaying: ((NSScreen) -> Void)?
+
     init(media: MediaController) {
         panel = FloatingDockPanel(contentRect: NSRect(origin: .zero, size: AppSettings.shared.layout.panelSize))
         super.init()
         settings.onLayoutChange = { [weak self] in self?.previewLayout() }
 
-        let hostingView = FirstMouseHostingView(rootView: MusicDockView(visibility: visibility, media: media))
+        let hostingView = FirstMouseHostingView(
+            rootView: MusicDockView(visibility: visibility, media: media) { [weak self] in self?.artworkTapped() }
+        )
         hostingView.sizingOptions = []
         panel.contentView = hostingView
         panel.ignoresMouseEvents = true
@@ -193,6 +198,12 @@ final class DockPanelController: NSObject {
                 self.panel.orderOut(nil)
             }
         }
+    }
+
+    private func artworkTapped() {
+        let screen = panel.screen ?? NSScreen.main
+        hide()
+        if let screen { onOpenNowPlaying?(screen) }
     }
 
     /// A position setting changed: show the dock in its new place for a

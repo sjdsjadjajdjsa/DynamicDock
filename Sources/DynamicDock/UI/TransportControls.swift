@@ -69,12 +69,14 @@ struct ControlButton: View {
                 .contentShape(Circle())
         }
         .buttonStyle(PressScaleStyle())
+        // Keyboard focus would draw a ring and make Space press this button.
+        .focusable(false)
         .onHover { isHovered.wrappedValue = $0 }
         .animation(.easeOut(duration: 0.15), value: isHovered.wrappedValue)
     }
 }
 
-private struct PressScaleStyle: ButtonStyle {
+struct PressScaleStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .scaleEffect(configuration.isPressed ? 0.9 : 1)

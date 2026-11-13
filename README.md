@@ -27,6 +27,9 @@ Touch the bottom edge of your screen and your music slides up.
 
 - **Hidden until you want it.** The dock lives off screen and springs up when
   your cursor rests on the screen edge, like the macOS Dock.
+- **Big now-playing view.** Click the album artwork to open a large glass
+  card with the cover on one side and an audio visualizer that follows the
+  music on the other.
 - **Bottom, left or right.** Put it on any of the three edges, anywhere
   along that edge. On the sides it becomes a vertical pill.
 - **Now playing at a glance.** Track title, artist and album artwork from
@@ -66,12 +69,19 @@ earlier versions use standard vibrancy.
 If you clicked Don't Allow, turn it on under System Settings → Privacy &
 Security → Automation → Dynamic Dock.
 
+The first time you open the big now-playing view, macOS asks whether Dynamic
+Dock may record system audio. That is what lets the visualizer follow the
+music (macOS 14.2 or later). If you decline, the bars still move, but with
+simulated motion.
+
 ## Usage
 
 | To | Do this |
 |---|---|
 | Show the dock | Rest the cursor on the screen edge where the dock lives (bottom centre by default) |
 | Hide the dock | Move the cursor away |
+| Open the big now-playing view | Click the album artwork on the dock |
+| Close it | Press Esc, click the X, or click outside the card (Space plays and pauses) |
 | Change settings | Click the music-note icon in the menu bar → Settings |
 | Quit | Click the music-note icon in the menu bar → Quit |
 
@@ -110,7 +120,8 @@ again after each rebuild. To avoid that, sign with a certificate:
 | Edge trigger | Global and local `NSEvent` mouse monitors; no Accessibility permission needed |
 | Track info | Distributed notifications posted by Spotify and Music, so nothing is polled |
 | Controls and artwork | Apple Events, sent only to players that are already running |
-| Visualizer | Core Animation layers animated by the system render server |
+| Dock visualizer | Core Animation layers animated by the system render server |
+| Now-playing visualizer | A Core Audio system tap analysed with an FFT, running only while the view is open |
 | Interface | SwiftUI hosted in AppKit |
 
 The source is organised as `App`, `Windowing`, `Media`, `UI` and `Settings`
@@ -122,6 +133,11 @@ The app makes two kinds of network request: downloading album artwork from
 Spotify's image server, and asking GitHub for the latest release when you
 open Settings (plus downloading it if you click Update Now). It collects
 nothing.
+
+While the big now-playing view is open, the app listens to the audio your Mac
+is playing to draw the visualizer. The sound is turned into bar heights in
+memory and is never recorded, saved or sent anywhere. It stops listening when
+the view closes.
 
 ## License
 
