@@ -13,7 +13,7 @@ Touch the bottom edge of your screen and your music slides up.
 
 [**Download the latest release**](https://github.com/sjdsjadjajdjsa/DynamicDock/releases/latest)
 
-<img src="docs/preview.png" width="720" alt="The Dynamic Dock pill showing a track, a visualizer and playback controls">
+<img src="docs/dock.png" width="720" alt="The Dynamic Dock pill showing a track, a visualizer and playback controls">
 
 <sub>Design render. On macOS 26 and later the pill is real Liquid Glass.</sub>
 
