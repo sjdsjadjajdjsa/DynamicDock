@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     let settings: AppSettings
+    private let updater = Updater.shared
 
     var body: some View {
         Form {
@@ -67,10 +68,49 @@ struct SettingsView: View {
                     label: String(format: "%.2f s", settings.hideDelay)
                 )
             }
+
+            Section("Updates") {
+                LabeledContent("Version \(updater.currentVersion)") {
+                    HStack(spacing: 10) {
+                        Text(updateStatus)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.trailing)
+                        updateButton
+                    }
+                }
+            }
         }
         .formStyle(.grouped)
-        .frame(width: 460, height: 470)
-        .onAppear { settings.refreshLaunchAtLogin() }
+        .frame(width: 460, height: 560)
+        .onAppear {
+            settings.refreshLaunchAtLogin()
+            Task { await updater.check() }
+        }
+    }
+
+    private var updateStatus: String {
+        switch updater.state {
+        case .idle: return ""
+        case .checking: return "Checking…"
+        case .upToDate: return "You have the latest version."
+        case .available(let version): return "Version \(version) is available."
+        case .installing: return "Updating…"
+        case .failed(let message): return message
+        }
+    }
+
+    @ViewBuilder
+    private var updateButton: some View {
+        switch updater.state {
+        case .available:
+            Button("Update Now") { Task { await updater.install() } }
+                .buttonStyle(.borderedProminent)
+        case .checking, .installing:
+            ProgressView().controlSize(.small)
+        case .idle, .upToDate, .failed:
+            Button("Check for Updates") { Task { await updater.check() } }
+        }
     }
 
     private func slider(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, label: String) -> some View {

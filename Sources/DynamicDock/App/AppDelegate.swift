@@ -28,6 +28,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
+        // Development aid: install the latest release without the settings
+        // window. Exits with 1 when there was nothing to install.
+        if CommandLine.arguments.contains("--self-update") {
+            Task {
+                await Updater.shared.check()
+                await Updater.shared.install()
+                exit(1)
+            }
+            return
+        }
+
         media.start()
 
         let controller = DockPanelController(media: media)

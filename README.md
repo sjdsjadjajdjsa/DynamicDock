@@ -36,6 +36,8 @@ Touch the bottom edge of your screen and your music slides up.
   into dots when it pauses.
 - **Native look.** Liquid Glass, continuous corners, spring animations and
   scrolling text for long titles.
+- **One-click updates.** Settings shows when a new version is out and
+  installs it with one button.
 - **Stays out of the way.** No Dock icon, never steals keyboard focus, works
   over full-screen apps and on every Space, and uses no CPU while hidden.
 
@@ -116,8 +118,10 @@ under `Sources/DynamicDock`.
 
 ## Privacy
 
-The app makes one kind of network request: downloading album artwork from
-Spotify's image server. It collects nothing.
+The app makes two kinds of network request: downloading album artwork from
+Spotify's image server, and asking GitHub for the latest release when you
+open Settings (plus downloading it if you click Update Now). It collects
+nothing.
 
 ## License
 
