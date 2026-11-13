@@ -17,6 +17,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // outside the bundle (e.g. `swift run`).
         NSApp.setActivationPolicy(.accessory)
 
+        if SnapshotTool.runLiveIfRequested(media: media) {
+            return
+        }
+
         // Development aid: open only the settings window, so it can be
         // checked without the menu bar, the dock or any player access.
         if CommandLine.arguments.contains("--show-settings") {

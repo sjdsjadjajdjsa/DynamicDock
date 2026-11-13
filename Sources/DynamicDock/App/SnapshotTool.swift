@@ -1,9 +1,12 @@
 import AppKit
 import SwiftUI
 
-/// Development aid: `DynamicDock --snapshot <path.png> [scale]` renders the
-/// dock to a PNG and exits, so the design can be inspected without the
-/// cursor being on the screen edge.
+/// Development aid: renders the dock to a PNG and exits, so the design can be
+/// inspected without the cursor being on the screen edge.
+///
+/// - `DynamicDock --snapshot <path.png> [scale]` uses sample track data.
+/// - `DynamicDock --live-snapshot <path.png> [scale]` uses whatever Spotify
+///   or Music is playing, including its real artwork.
 @MainActor
 enum SnapshotTool {
     /// Returns true when a snapshot was requested (and the app should exit).
@@ -15,11 +18,38 @@ enum SnapshotTool {
         let path = arguments[flag + 1]
         let scale = arguments.count > flag + 2 ? Double(arguments[flag + 2]) ?? 2 : 2
 
+        let media = MediaController()
+        if !arguments.contains("--empty") { media.loadPreviewData(longTitle: arguments.contains("--long")) }
+        render(media: media, to: path, scale: scale)
+        return true
+    }
+
+    /// Starts watching the players, waits for a track and its artwork, then
+    /// renders. Returns true when a live snapshot was requested.
+    static func runLiveIfRequested(media: MediaController) -> Bool {
+        let arguments = CommandLine.arguments
+        guard let flag = arguments.firstIndex(of: "--live-snapshot"), arguments.count > flag + 1 else {
+            return false
+        }
+        let path = arguments[flag + 1]
+        let scale = arguments.count > flag + 2 ? Double(arguments[flag + 2]) ?? 2 : 2
+
+        media.start()
+        Task {
+            // Allow time for the Automation prompt to be answered.
+            for _ in 0..<480 where media.artwork == nil {
+                try? await Task.sleep(for: .milliseconds(250))
+            }
+            render(media: media, to: path, scale: scale)
+            exit(media.artwork == nil ? 1 : 0)
+        }
+        return true
+    }
+
+    private static func render(media: MediaController, to path: String, scale: Double) {
         DesignPreview.isSnapshot = true
         let visibility = DockVisibility()
         visibility.isShown = true
-        let media = MediaController()
-        if !arguments.contains("--empty") { media.loadPreviewData(longTitle: arguments.contains("--long")) }
         let content = MusicDockView(visibility: visibility, media: media)
             .frame(width: DesignTokens.panelSize.width, height: DesignTokens.panelSize.height)
             .environment(\.displayScale, scale)
@@ -42,9 +72,8 @@ enum SnapshotTool {
               let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])
         else {
             FileHandle.standardError.write(Data("snapshot failed\n".utf8))
-            return true
+            return
         }
         try? data.write(to: URL(fileURLWithPath: path))
-        return true
     }
 }
