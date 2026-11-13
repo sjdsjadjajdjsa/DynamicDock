@@ -11,7 +11,7 @@ final class DockVisibility {
 }
 
 /// Owns the floating panel and runs the show/hide state machine:
-/// hidden → (cursor dwells on the bottom edge) → shown → (cursor stays away
+/// hidden → (cursor dwells on the dock's screen edge) → shown → (cursor stays away
 /// for the grace delay) → hidden.
 @MainActor
 final class DockPanelController: NSObject {
@@ -31,8 +31,9 @@ final class DockPanelController: NSObject {
     private var orderOutTask: Task<Void, Never>?
 
     init(media: MediaController) {
-        panel = FloatingDockPanel(contentRect: NSRect(origin: .zero, size: DesignTokens.panelSize))
+        panel = FloatingDockPanel(contentRect: NSRect(origin: .zero, size: AppSettings.shared.layout.panelSize))
         super.init()
+        settings.onLayoutChange = { [weak self] in self?.previewLayout() }
 
         let hostingView = FirstMouseHostingView(rootView: MusicDockView(visibility: visibility, media: media))
         hostingView.sizingOptions = []
@@ -64,17 +65,18 @@ final class DockPanelController: NSObject {
         }
     }
 
-    private func triggerRect(on screenFrame: CGRect) -> CGRect {
-        ScreenGeometry.triggerRect(screenFrame: screenFrame, fullWidth: settings.fullWidthTrigger)
-    }
+    private var layout: DockLayout { settings.layout }
 
     /// The screen whose trigger strip the cursor is on, if any.
     private func triggeredScreen() -> NSScreen? {
-        // Ignore the edge while dragging, so drags near the bottom don't reveal the dock.
+        // Ignore the edge while dragging, so drags near it don't reveal the dock.
         guard NSEvent.pressedMouseButtons == 0 else { return nil }
         let location = NSEvent.mouseLocation
         guard let screen = ScreenGeometry.screen(containing: location),
-              ScreenGeometry.inclusiveContains(triggerRect(on: screen.frame), location)
+              ScreenGeometry.inclusiveContains(
+                  layout.triggerRect(screenFrame: screen.frame, visibleFrame: screen.visibleFrame),
+                  location
+              )
         else { return nil }
         return screen
     }
@@ -87,7 +89,7 @@ final class DockPanelController: NSObject {
         }
         guard dwellTask == nil else { return }
 
-        let stacked = ScreenGeometry.hasScreenBelow(
+        let stacked = layout.hasScreenBeyondEdge(
             NSEvent.mouseLocation,
             screenFrame: screen.frame,
             allFrames: NSScreen.screens.map(\.frame)
@@ -110,13 +112,18 @@ final class DockPanelController: NSObject {
     private func cursorIsOverDock() -> Bool {
         guard let activeScreen else { return false }
         let location = NSEvent.mouseLocation
-        let keepAlive = ScreenGeometry.keepAliveRect(
+        let layout = layout
+        let keepAlive = layout.keepAliveRect(
+            screenFrame: activeScreen.frame,
+            visibleFrame: activeScreen.visibleFrame
+        )
+        let trigger = layout.triggerRect(
             screenFrame: activeScreen.frame,
             visibleFrame: activeScreen.visibleFrame
         )
         // The trigger strip also counts, so resting where you triggered keeps the dock open.
         return ScreenGeometry.inclusiveContains(keepAlive, location)
-            || ScreenGeometry.inclusiveContains(triggerRect(on: activeScreen.frame), location)
+            || ScreenGeometry.inclusiveContains(trigger, location)
     }
 
     private func evaluateKeepAlive() {
@@ -128,9 +135,10 @@ final class DockPanelController: NSObject {
         }
     }
 
-    private func scheduleHide() {
+    private func scheduleHide(after delay: TimeInterval? = nil) {
+        let delay = delay ?? settings.hideDelay
         hideTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(self?.settings.hideDelay ?? DesignTokens.defaultHideDelay))
+            try? await Task.sleep(for: .seconds(delay))
             guard !Task.isCancelled, let self else { return }
             self.hideTask = nil
             guard self.state == .shown, !self.cursorIsOverDock() else { return }
@@ -151,7 +159,7 @@ final class DockPanelController: NSObject {
 
         activeScreen = (screen.frame, screen.visibleFrame)
         panel.setFrame(
-            ScreenGeometry.panelFrame(screenFrame: screen.frame, visibleFrame: screen.visibleFrame),
+            layout.panelFrame(screenFrame: screen.frame, visibleFrame: screen.visibleFrame),
             display: true
         )
         panel.ignoresMouseEvents = false
@@ -185,6 +193,26 @@ final class DockPanelController: NSObject {
                 self.panel.orderOut(nil)
             }
         }
+    }
+
+    /// A position setting changed: show the dock in its new place for a
+    /// moment, so the effect of the setting is visible while adjusting it.
+    private func previewLayout() {
+        dwellTask?.cancel()
+        dwellTask = nil
+        guard let screen = NSApp.keyWindow?.screen ?? NSScreen.main ?? NSScreen.screens.first else { return }
+
+        if state == .shown {
+            activeScreen = (screen.frame, screen.visibleFrame)
+            panel.setFrame(
+                layout.panelFrame(screenFrame: screen.frame, visibleFrame: screen.visibleFrame),
+                display: true
+            )
+        } else {
+            show(on: screen)
+        }
+        hideTask?.cancel()
+        scheduleHide(after: DesignTokens.layoutPreviewDuration)
     }
 
     @objc private func screenLayoutDidChange() {

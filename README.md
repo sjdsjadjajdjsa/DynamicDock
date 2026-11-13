@@ -26,7 +26,9 @@ Touch the bottom edge of your screen and your music slides up.
 ## Features
 
 - **Hidden until you want it.** The dock lives off screen and springs up when
-  your cursor rests on the bottom-centre edge, like the macOS Dock.
+  your cursor rests on the screen edge, like the macOS Dock.
+- **Bottom, left or right.** Put it on any of the three edges, anywhere
+  along that edge. On the sides it becomes a vertical pill.
 - **Now playing at a glance.** Track title, artist and album artwork from
   Spotify or Apple Music, updated the moment the song changes.
 - **Playback controls.** Play, pause, skip and go back without switching apps.
@@ -66,16 +68,18 @@ Security → Automation → Dynamic Dock.
 
 | To | Do this |
 |---|---|
-| Show the dock | Rest the cursor on the bottom edge of the screen, near the centre |
+| Show the dock | Rest the cursor on the screen edge where the dock lives (bottom centre by default) |
 | Hide the dock | Move the cursor away |
 | Change settings | Click the music-note icon in the menu bar → Settings |
 | Quit | Click the music-note icon in the menu bar → Quit |
 
-Settings let you open the app at login, reveal the dock from the entire
-bottom edge, and tune how quickly it appears and hides.
+Settings let you open the app at login, choose the screen edge (bottom, left
+or right), slide the dock along that edge, set its distance from the edge,
+reveal it from the entire edge, and tune how quickly it appears and hides.
+The dock shows itself in its new place while you adjust its position.
 
-If your macOS Dock is also at the bottom with auto-hide on, both appear
-together. Moving the macOS Dock to the left or right avoids that.
+If your macOS Dock is on the same edge with auto-hide on, both appear
+together. Putting them on different edges avoids that.
 
 ## Build from source
 

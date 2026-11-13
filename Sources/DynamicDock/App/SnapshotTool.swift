@@ -59,8 +59,14 @@ enum SnapshotTool {
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
-        let dock = MusicDockView(visibility: visibility, media: media)
-            .frame(width: DesignTokens.panelSize.width, height: DesignTokens.panelSize.height)
+        // `--edge left|right` renders the vertical pill.
+        var layout = DockLayout()
+        if let flag = CommandLine.arguments.firstIndex(of: "--edge"), CommandLine.arguments.count > flag + 1,
+           let edge = DockEdge(rawValue: CommandLine.arguments[flag + 1]) {
+            layout.edge = edge
+        }
+        let dock = MusicDockView(visibility: visibility, media: media, layoutOverride: layout)
+            .frame(width: layout.panelSize.width, height: layout.panelSize.height)
             .environment(\.colorScheme, .dark)
 
         // `--social` lays the dock out on a 2:1 card with the icon and name,

@@ -12,6 +12,8 @@ struct MarqueeText: View {
     let isActive: Bool
     /// When the dock was last revealed; the cycle restarts from its rest then.
     let restartAt: Date
+    /// Where text that fits sits within the available width.
+    var alignment: Alignment = .leading
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -38,7 +40,7 @@ struct MarqueeText: View {
             let available = proxy.size.width
             if textWidth <= available || reduceMotion || DesignPreview.isSnapshot {
                 label
-                    .frame(width: available, alignment: .leading)
+                    .frame(width: available, alignment: alignment)
             } else {
                 // Capped at 60fps: plenty for slow text, and it keeps the work
                 // bounded on very high refresh-rate displays.

@@ -11,12 +11,48 @@ final class AppSettings {
         static let revealDelay = "revealDelay"
         static let hideDelay = "hideDelay"
         static let fullWidthTrigger = "fullWidthTrigger"
+        static let edge = "edge"
+        static let position = "position"
+        static let edgeMargin = "edgeMargin"
     }
 
     static let revealDelayRange: ClosedRange<Double> = 0...0.6
     static let hideDelayRange: ClosedRange<Double> = 0.1...1.5
+    static let edgeMarginRange: ClosedRange<Double> = 4...80
 
-    /// Seconds the cursor must rest on the bottom edge before the dock shows.
+    /// Screen edge the dock lives on.
+    var edge: DockEdge {
+        didSet {
+            defaults.set(edge.rawValue, forKey: Key.edge)
+            onLayoutChange?()
+        }
+    }
+
+    /// Place along the edge, 0...1: left to right on the bottom edge, bottom
+    /// to top on the side edges.
+    var position: Double {
+        didSet {
+            defaults.set(position, forKey: Key.position)
+            onLayoutChange?()
+        }
+    }
+
+    /// Gap between the dock and the screen edge, in points.
+    var edgeMargin: Double {
+        didSet {
+            defaults.set(edgeMargin, forKey: Key.edgeMargin)
+            onLayoutChange?()
+        }
+    }
+
+    /// Called after a setting that moves the dock changes.
+    @ObservationIgnored var onLayoutChange: (() -> Void)?
+
+    var layout: DockLayout {
+        DockLayout(edge: edge, position: position, margin: edgeMargin, fullEdgeTrigger: fullWidthTrigger)
+    }
+
+    /// Seconds the cursor must rest on the edge before the dock shows.
     var revealDelay: Double {
         didSet { defaults.set(revealDelay, forKey: Key.revealDelay) }
     }
@@ -26,7 +62,7 @@ final class AppSettings {
         didSet { defaults.set(hideDelay, forKey: Key.hideDelay) }
     }
 
-    /// Whether the whole bottom edge reveals the dock, rather than its centre.
+    /// Whether the whole edge reveals the dock, rather than the part near it.
     var fullWidthTrigger: Bool {
         didSet { defaults.set(fullWidthTrigger, forKey: Key.fullWidthTrigger) }
     }
@@ -43,7 +79,15 @@ final class AppSettings {
             Key.revealDelay: DesignTokens.defaultRevealDelay,
             Key.hideDelay: DesignTokens.defaultHideDelay,
             Key.fullWidthTrigger: false,
+            Key.position: 0.5,
+            Key.edgeMargin: Double(DesignTokens.defaultEdgeMargin),
         ])
+        edge = defaults.string(forKey: Key.edge).flatMap(DockEdge.init(rawValue:)) ?? .bottom
+        position = min(max(defaults.double(forKey: Key.position), 0), 1)
+        edgeMargin = min(
+            max(defaults.double(forKey: Key.edgeMargin), Self.edgeMarginRange.lowerBound),
+            Self.edgeMarginRange.upperBound
+        )
         revealDelay = defaults.double(forKey: Key.revealDelay)
         hideDelay = defaults.double(forKey: Key.hideDelay)
         fullWidthTrigger = defaults.bool(forKey: Key.fullWidthTrigger)

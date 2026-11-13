@@ -4,9 +4,27 @@ import SwiftUI
 /// macOS has refused Automation access to the player.
 struct TransportControls: View {
     let media: MediaController
+    /// Stacks the buttons top to bottom, for the vertical pill.
+    var vertical = false
 
     var body: some View {
-        if let player = media.playerNeedingPermission {
+        if let player = media.playerNeedingPermission, vertical {
+            Button {
+                media.openAutomationSettings()
+            } label: {
+                VStack(spacing: 4) {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 15, weight: .semibold))
+                    Text("Allow")
+                        .font(.system(size: 11, weight: .semibold))
+                }
+                .frame(width: 60, height: 52)
+                .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.white.opacity(0.16)))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Allow \(player.displayName) Access")
+        } else if let player = media.playerNeedingPermission {
             Button("Allow \(player.displayName) Access") {
                 media.openAutomationSettings()
             }
@@ -17,7 +35,10 @@ struct TransportControls: View {
             .background(Capsule().fill(Color.white.opacity(0.16)))
             .contentShape(Capsule())
         } else {
-            HStack(spacing: 2) {
+            let layout = vertical
+                ? AnyLayout(VStackLayout(spacing: 2))
+                : AnyLayout(HStackLayout(spacing: 2))
+            layout {
                 ControlButton(symbol: "backward.fill", size: 15) { media.send(.previous) }
                 ControlButton(symbol: media.isPlaying ? "pause.fill" : "play.fill", size: 20) { media.send(.playPause) }
                 ControlButton(symbol: "forward.fill", size: 15) { media.send(.next) }
