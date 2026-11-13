@@ -15,7 +15,11 @@ Touch the bottom edge of your screen and your music slides up.
 
 <img src="docs/dock.png" width="720" alt="The Dynamic Dock pill showing a track, a visualizer and playback controls">
 
-<sub>Design render. On macOS 26 and later the pill is real Liquid Glass.</sub>
+<sub>Design render.</sub>
+
+<img src="docs/screenshot.png" width="450" alt="Screenshot of Dynamic Dock on a desktop, with the Liquid Glass surface">
+
+<sub>Screenshot on a real desktop, with Liquid Glass (macOS 26 and later).</sub>
 
 </div>
 
