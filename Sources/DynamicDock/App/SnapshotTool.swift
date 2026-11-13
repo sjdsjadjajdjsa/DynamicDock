@@ -48,6 +48,17 @@ enum SnapshotTool {
 
     private static func render(media: MediaController, to path: String, scale: Double) {
         DesignPreview.isSnapshot = true
+        // `--settings` renders the settings window's content.
+        if CommandLine.arguments.contains("--settings") {
+            let renderer = ImageRenderer(content: SettingsView(settings: .shared).environment(\.displayScale, scale))
+            renderer.scale = scale
+            if let image = renderer.cgImage,
+               let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) {
+                try? data.write(to: URL(fileURLWithPath: path))
+            }
+            return
+        }
+
         // `--full` renders the full-screen now-playing view instead of the dock.
         if CommandLine.arguments.contains("--full") {
             let view = NowPlayingView(media: media, spectrum: AudioSpectrum(), onClose: {})
