@@ -6,6 +6,8 @@ import SwiftUI
 @MainActor
 enum DesignPreview {
     static var isSnapshot = false
+    /// Visualizer style to draw in a snapshot, instead of the saved one.
+    static var visualizerStyle: VisualizerStyle?
 }
 
 /// The pill's surface: Liquid Glass on macOS 26 and later, classic vibrancy

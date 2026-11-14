@@ -30,6 +30,10 @@ Touch the bottom edge of your screen and your music slides up.
 - **Big now-playing view.** Click the album artwork to open a large glass
   card with the cover on one side and an audio visualizer that follows the
   music on the other.
+- **Synced lyrics.** When a song has them, the lyrics appear under the
+  visualizer and follow along line by line.
+- **Five visualizer styles.** Click the visualizer to switch between bars,
+  wave, mirror, dots and ring.
 - **Bottom, left or right.** Put it on any of the three edges, anywhere
   along that edge. On the sides it becomes a vertical pill.
 - **Now playing at a glance.** Track title, artist and album artwork from
@@ -81,6 +85,7 @@ simulated motion.
 | Show the dock | Rest the cursor on the screen edge where the dock lives (bottom centre by default) |
 | Hide the dock | Move the cursor away |
 | Open the big now-playing view | Click the album artwork on the dock |
+| Change the visualizer style | Click the visualizer in the big view |
 | Close it | Press Esc, click the X, or click outside the card (Space plays and pauses) |
 | Change settings | Click the music-note icon in the menu bar → Settings |
 | Quit | Click the music-note icon in the menu bar → Quit |
@@ -129,10 +134,15 @@ under `Sources/DynamicDock`.
 
 ## Privacy
 
-The app makes two kinds of network request: downloading album artwork from
-Spotify's image server, and asking GitHub for the latest release when you
-open Settings (plus downloading it if you click Update Now). It collects
-nothing.
+The app makes three kinds of network request:
+
+- downloading album artwork from Spotify's image server;
+- asking GitHub for the latest release when you open Settings, and
+  downloading it if you click Update Now;
+- looking up lyrics on [LRCLIB](https://lrclib.net) while the big now-playing
+  view is open, which sends the song's title, artist, album and length.
+
+It collects nothing.
 
 While the big now-playing view is open, the app listens to the audio your Mac
 is playing to draw the visualizer. The sound is turned into bar heights in

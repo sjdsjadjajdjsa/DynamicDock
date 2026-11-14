@@ -2,11 +2,12 @@ import AppKit
 import SwiftUI
 
 /// Large glass card opened by clicking the dock's artwork: album art, track
-/// details and controls on the left, an audio visualizer on the right. It
+/// details and controls on the left, an audio visualizer and lyrics on the right. It
 /// stops short of the screen edges, and a click in that gap closes it.
 struct NowPlayingView: View {
     let media: MediaController
     let spectrum: AudioSpectrum
+    let lyrics: LyricsController
     let onClose: () -> Void
 
     private static let cardShape = RoundedRectangle(cornerRadius: 44, style: .continuous)
@@ -31,11 +32,7 @@ struct NowPlayingView: View {
                     HStack(alignment: .top, spacing: card.width * 0.06) {
                         details(image: image, side: artworkSide)
 
-                        SpectrumBarsView(spectrum: spectrum, isPlaying: media.isPlaying)
-                            .padding(artworkSide * 0.09)
-                            .frame(width: card.width * 0.40, height: artworkSide)
-                            .background(panel)
-                            .accessibilityHidden(true)
+                        rightColumn(width: card.width * 0.40, side: artworkSide)
                     }
 
                     closeButton
@@ -53,6 +50,50 @@ struct NowPlayingView: View {
         .ignoresSafeArea()
         .environment(\.colorScheme, .dark)
         .focusEffectDisabled()
+    }
+
+    /// Height of the title, artist and controls under the artwork.
+    private static let detailsHeight: CGFloat = 171
+
+    /// The visualizer, with the lyrics under it when the song has any. The
+    /// column is as tall as the artwork column beside it.
+    private func rightColumn(width: CGFloat, side: CGFloat) -> some View {
+        let song = lyrics.lyrics
+        let total = side + Self.detailsHeight
+        let barsHeight = song == nil ? side : side * 0.42
+        let style = DesignPreview.visualizerStyle ?? AppSettings.shared.visualizerStyle
+
+        return VStack(spacing: 0) {
+            SpectrumBarsView(spectrum: spectrum, isPlaying: media.isPlaying, style: style)
+                // Each style is its own view, so a change crossfades.
+                .id(style)
+                .transition(.opacity)
+                .padding(.horizontal, side * 0.09)
+                .padding(.vertical, barsHeight * 0.14)
+                .frame(width: width, height: barsHeight)
+                .background(panel)
+                // Clicking the visualizer moves to the next style. Nothing
+                // on screen hints at it, by design.
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        AppSettings.shared.visualizerStyle = style.next
+                    }
+                }
+                .accessibilityHidden(true)
+
+            if let song {
+                LyricsView(lyrics: song, currentIndex: lyrics.currentIndex)
+                    .padding(.horizontal, 10)
+                    .frame(width: width, height: total - barsHeight - 18)
+                    .padding(.top, 18)
+                    .transition(.opacity)
+                    // A new song starts from its own first line.
+                    .id(song)
+            }
+        }
+        .frame(width: width, height: total, alignment: .top)
+        .animation(.spring(response: 0.55, dampingFraction: 0.86), value: song != nil)
     }
 
     private func details(image: NSImage?, side: CGFloat) -> some View {

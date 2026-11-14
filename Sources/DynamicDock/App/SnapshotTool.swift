@@ -61,7 +61,13 @@ enum SnapshotTool {
 
         // `--full` renders the full-screen now-playing view instead of the dock.
         if CommandLine.arguments.contains("--full") {
-            let view = NowPlayingView(media: media, spectrum: AudioSpectrum(), onClose: {})
+            // `--style wave` picks the visualizer style to draw.
+            if let flag = CommandLine.arguments.firstIndex(of: "--style"), CommandLine.arguments.count > flag + 1 {
+                DesignPreview.visualizerStyle = VisualizerStyle(rawValue: CommandLine.arguments[flag + 1])
+            }
+            let lyrics = LyricsController(media: media)
+            if !CommandLine.arguments.contains("--no-lyrics") { lyrics.loadPreviewData() }
+            let view = NowPlayingView(media: media, spectrum: AudioSpectrum(), lyrics: lyrics, onClose: {})
                 .frame(width: 1440, height: 810)
             let renderer = ImageRenderer(content: view)
             renderer.scale = scale

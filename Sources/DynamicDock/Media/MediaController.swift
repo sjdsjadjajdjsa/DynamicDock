@@ -118,6 +118,18 @@ final class MediaController {
         }
     }
 
+    /// How far into the track the displayed player is, and the track's
+    /// length, both in seconds.
+    func playbackPosition() async -> (position: TimeInterval, duration: TimeInterval)? {
+        guard let player = activePlayer, player.isRunning,
+              case .success(let output) = await runner.run(player.positionScript)
+        else { return nil }
+        // Numbers may come back with a decimal comma, depending on the region.
+        let values = output.strings.compactMap { Double($0.replacingOccurrences(of: ",", with: ".")) }
+        guard values.count == 2 else { return nil }
+        return (values[0], player.seconds(fromDuration: values[1]))
+    }
+
     /// Opens Privacy & Security → Automation, where access can be granted.
     func openAutomationSettings() {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation") {

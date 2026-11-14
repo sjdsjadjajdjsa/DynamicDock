@@ -24,6 +24,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Development aid: open only the settings window, so it can be
         // checked without the menu bar, the dock or any player access.
+        // Development aid: look up lyrics for "title" "artist" "album" seconds
+        // and report what was found, without printing the words.
+        if let flag = CommandLine.arguments.firstIndex(of: "--lyrics-test"), CommandLine.arguments.count > flag + 4 {
+            let values = Array(CommandLine.arguments[(flag + 1)...(flag + 4)])
+            Task {
+                let track = TrackInfo(id: "test", title: values[0], artist: values[1], album: values[2])
+                let found = await LyricsService.lyrics(for: track, duration: Double(values[3]) ?? 0)
+                if let found {
+                    print("\(found.isSynced ? "synced" : "plain"), \(found.lines.count) lines, first at \(found.lines.first?.time ?? -1)s")
+                } else {
+                    print("none")
+                }
+                exit(0)
+            }
+            return
+        }
+
         if let flag = CommandLine.arguments.firstIndex(of: "--settings-window-snapshot"),
            CommandLine.arguments.count > flag + 1 {
             let path = CommandLine.arguments[flag + 1]

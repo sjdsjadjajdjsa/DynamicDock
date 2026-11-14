@@ -31,6 +31,7 @@ final class NowPlayingWindowController {
 
     private let media: MediaController
     private let spectrum = AudioSpectrum()
+    private let lyrics: LyricsController
     /// A `SystemAudioTap`, held untyped because it needs macOS 14.2.
     private var tap: AnyObject?
     private var window: NowPlayingWindow?
@@ -41,6 +42,7 @@ final class NowPlayingWindowController {
 
     init(media: MediaController) {
         self.media = media
+        lyrics = LyricsController(media: media)
     }
 
     func open(on screen: NSScreen) {
@@ -65,7 +67,7 @@ final class NowPlayingWindowController {
         window.onClose = { [weak self] in self?.close() }
         window.onPlayPause = { [weak self] in self?.media.send(.playPause) }
         window.contentView = NSHostingView(
-            rootView: NowPlayingView(media: media, spectrum: spectrum) { [weak self] in self?.close() }
+            rootView: NowPlayingView(media: media, spectrum: spectrum, lyrics: lyrics) { [weak self] in self?.close() }
         )
         window.setFrame(screen.frame, display: true)
         window.alphaValue = 0
@@ -81,12 +83,14 @@ final class NowPlayingWindowController {
         }
 
         startListening()
+        lyrics.start()
     }
 
     func close() {
         guard let window else { return }
         self.window = nil
         stopListening()
+        lyrics.stop()
 
         let closing = generation
         NSAnimationContext.runAnimationGroup({ context in

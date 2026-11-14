@@ -114,6 +114,22 @@ enum MediaPlayer: CaseIterable, Sendable {
         """)
     }
 
+    /// Returns {seconds into the track, track length}. Spotify gives the
+    /// length in milliseconds, Music in seconds.
+    var positionScript: String {
+        tell("""
+        try
+                    return {player position, duration of current track}
+                end try
+                return {}
+        """)
+    }
+
+    /// The track length reported by `positionScript`, in seconds.
+    func seconds(fromDuration value: Double) -> Double {
+        self == .spotify ? value / 1000 : value
+    }
+
     /// Spotify returns an image URL; Music returns the image bytes.
     var artworkScript: String {
         switch self {

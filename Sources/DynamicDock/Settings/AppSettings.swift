@@ -14,6 +14,7 @@ final class AppSettings {
         static let edge = "edge"
         static let position = "position"
         static let edgeMargin = "edgeMargin"
+        static let visualizerStyle = "visualizerStyle"
     }
 
     static let revealDelayRange: ClosedRange<Double> = 0...0.6
@@ -43,6 +44,11 @@ final class AppSettings {
             defaults.set(edgeMargin, forKey: Key.edgeMargin)
             onLayoutChange?()
         }
+    }
+
+    /// Look of the now-playing visualizer; clicking it moves to the next one.
+    var visualizerStyle: VisualizerStyle {
+        didSet { defaults.set(visualizerStyle.rawValue, forKey: Key.visualizerStyle) }
     }
 
     /// Called after a setting that moves the dock changes.
@@ -83,6 +89,7 @@ final class AppSettings {
             Key.edgeMargin: Double(DesignTokens.defaultEdgeMargin),
         ])
         edge = defaults.string(forKey: Key.edge).flatMap(DockEdge.init(rawValue:)) ?? .bottom
+        visualizerStyle = defaults.string(forKey: Key.visualizerStyle).flatMap(VisualizerStyle.init(rawValue:)) ?? .bars
         position = min(max(defaults.double(forKey: Key.position), 0), 1)
         edgeMargin = min(
             max(defaults.double(forKey: Key.edgeMargin), Self.edgeMarginRange.lowerBound),
